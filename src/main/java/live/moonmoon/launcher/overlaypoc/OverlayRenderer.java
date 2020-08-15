@@ -1,7 +1,6 @@
 package live.moonmoon.launcher.overlaypoc;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.ResourceLocation;
@@ -23,38 +22,40 @@ public class OverlayRenderer {
   private static final Thread loopThread = new Thread(loop);
 
   protected static BufferedImage imgBuff = new BufferedImage(1280, 720, TYPE_INT_ARGB);
+  protected static boolean hasRefreshed = true;
+  protected static ResourceLocation loc;
 
   public OverlayRenderer() {
     loopThread.start();
   }
 
-  @SubscribeEvent(priority = EventPriority.LOW)
+  @SubscribeEvent(priority = EventPriority.HIGHEST)
   public void renderOverlay(RenderGameOverlayEvent.Pre ev) {
-    final ScaledResolution scaled = new ScaledResolution(mc);
-    ev.setCanceled(true);
+    if (hasRefreshed || loc == null) {
+      mc.getTextureManager().deleteTexture(loc);
+
+      loc = mc
+        .getTextureManager()
+        .getDynamicTextureLocation(
+          "overlay-poc-img",
+          new DynamicTexture(imgBuff)
+        );
+
+      hasRefreshed = false;
+    }
 
     mc.profiler.startSection("overlay-poc");
     GlStateManager.pushMatrix();
     GlStateManager.enableBlend();
 
-    final ResourceLocation loc = mc
-      .getTextureManager()
-      .getDynamicTextureLocation(
-        "overlay-poc-img",
-        new DynamicTexture(imgBuff)
-      );
-
     mc.getTextureManager().bindTexture(loc);
 
-    mc.ingameGUI.drawTexturedModalRect(0, 0, 0, 0, scaled.getScaledWidth(), scaled.getScaledHeight());
+    mc.ingameGUI.drawTexturedModalRect(0, 0, 0, 0, mc.displayWidth, mc.displayHeight);
 
     GlStateManager.disableBlend();
     GlStateManager.popMatrix();
 
-    mc.getTextureManager().deleteTexture(loc);
-
     mc.profiler.endSection();
-    ev.setCanceled(true);
   }
 }
 
@@ -69,6 +70,8 @@ class RenderLoop implements Runnable {
       } catch (IOException e) {
         e.printStackTrace();
       }
+
+      OverlayRenderer.hasRefreshed = true;
     }
   }
 }

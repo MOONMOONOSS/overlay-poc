@@ -1,0 +1,18 @@
+[
+  {
+    "modid": "OverlayPoc",
+    "name": "OverlayPoc",
+    "description": "A proof of concept mod that creates a game GUI that displays an Electron offscreen window",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://github.com/MOONMOONOSS/overlay-poc",
+    "updateUrl": "",
+    "authorList": [
+      "Dunklheit"
+    ],
+    "credits": "",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  }
+]

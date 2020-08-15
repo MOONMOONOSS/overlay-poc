@@ -1,12 +1,12 @@
 package live.moonmoon.launcher.overlaypoc;
 
-import org.lwjgl.Sys;
+import net.minecraftforge.common.MinecraftForge;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
+import org.zeromq.ZMQ;
 
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.zeromq.ZMQ;
 
 @Mod(
   modid = Overlay.MOD_ID,
@@ -21,8 +21,8 @@ public class Overlay {
   @Mod.Instance(MOD_ID)
   public static Overlay INSTANCE;
 
-  private ZContext ctx;
-  private ZMQ.Socket socket;
+  protected static ZContext ctx;
+  protected static ZMQ.Socket socket;
 
   /**
    * This is the second initialization event. Register custom recipes
@@ -37,7 +37,6 @@ public class Overlay {
     socket = ctx.createSocket(SocketType.PULL);
     socket.connect("tcp://127.0.0.1:27015");
 
-    byte[] reply = socket.recv(0);
-    System.out.printf("Received %s%n", new String(reply));
+    MinecraftForge.EVENT_BUS.register(new OverlayRenderer());
   }
 }

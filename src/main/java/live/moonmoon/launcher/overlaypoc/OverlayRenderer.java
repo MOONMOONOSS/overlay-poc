@@ -1,6 +1,7 @@
 package live.moonmoon.launcher.overlaypoc;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.ResourceLocation;
@@ -14,14 +15,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
-
-public class OverlayRenderer {
+public class OverlayRenderer extends Gui {
   private final Minecraft mc = Minecraft.getMinecraft();
   private static final Runnable loop = new RenderLoop();
   private static final Thread loopThread = new Thread(loop);
 
-  protected static BufferedImage imgBuff = new BufferedImage(1280, 720, TYPE_INT_ARGB);
+  protected static BufferedImage imgBuff;
   protected static boolean hasRefreshed = true;
   protected static ResourceLocation loc;
 
@@ -30,7 +29,8 @@ public class OverlayRenderer {
   }
 
   @SubscribeEvent(priority = EventPriority.HIGHEST)
-  public void renderOverlay(RenderGameOverlayEvent.Pre ev) {
+  public void renderOverlay(RenderGameOverlayEvent.Post ev) {
+    if (imgBuff == null) return;
     if (hasRefreshed || loc == null) {
       mc.getTextureManager().deleteTexture(loc);
 
@@ -40,12 +40,12 @@ public class OverlayRenderer {
           "overlay-poc-img",
           new DynamicTexture(imgBuff)
         );
-
       hasRefreshed = false;
     }
 
     mc.profiler.startSection("overlay-poc");
-    GlStateManager.pushMatrix();
+
+    GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     GlStateManager.enableBlend();
 
     mc.getTextureManager().bindTexture(loc);
@@ -53,7 +53,6 @@ public class OverlayRenderer {
     mc.ingameGUI.drawTexturedModalRect(0, 0, 0, 0, mc.displayWidth, mc.displayHeight);
 
     GlStateManager.disableBlend();
-    GlStateManager.popMatrix();
 
     mc.profiler.endSection();
   }

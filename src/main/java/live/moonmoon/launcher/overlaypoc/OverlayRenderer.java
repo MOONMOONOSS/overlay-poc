@@ -19,10 +19,10 @@ public class OverlayRenderer extends Gui {
   private final Minecraft mc = Minecraft.getMinecraft();
   private static final Runnable loop = new RenderLoop();
   private static final Thread loopThread = new Thread(loop);
+  private static ResourceLocation loc;
 
   protected static BufferedImage imgBuff;
   protected static boolean hasRefreshed = true;
-  protected static ResourceLocation loc;
 
   public OverlayRenderer() {
     loopThread.start();
@@ -50,7 +50,7 @@ public class OverlayRenderer extends Gui {
 
     mc.getTextureManager().bindTexture(loc);
 
-    mc.ingameGUI.drawTexturedModalRect(0, 0, 0, 0, mc.displayWidth, mc.displayHeight);
+    drawModalRectWithCustomSizedTexture(0, 0, 0f, 0f, mc.displayWidth, mc.displayHeight, 800, 800);
 
     GlStateManager.disableBlend();
 

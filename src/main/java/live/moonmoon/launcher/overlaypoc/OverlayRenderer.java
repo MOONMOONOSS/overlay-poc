@@ -2,6 +2,7 @@ package live.moonmoon.launcher.overlaypoc;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.ResourceLocation;
@@ -25,11 +26,12 @@ public class OverlayRenderer extends Gui {
   protected static boolean hasRefreshed = true;
 
   public OverlayRenderer() {
+    zLevel = 0f;
     loopThread.start();
   }
 
-  @SubscribeEvent(priority = EventPriority.HIGHEST)
-  public void renderOverlay(RenderGameOverlayEvent.Post ev) {
+  @SubscribeEvent(priority = EventPriority.LOWEST)
+  public void renderOverlay(RenderGameOverlayEvent.Pre ev) {
     if (imgBuff == null) return;
     if (hasRefreshed || loc == null) {
       mc.getTextureManager().deleteTexture(loc);
@@ -44,15 +46,29 @@ public class OverlayRenderer extends Gui {
     }
 
     mc.profiler.startSection("overlay-poc");
+    final ScaledResolution res = new ScaledResolution(mc);
+    final int width = (int)(res.getScaledWidth() * 0.75);
+    final int height = res.getScaledHeight() / 2;
+    GlStateManager.pushMatrix();
 
+    GlStateManager.disableDepth();
+    GlStateManager.depthMask(false);
+    GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
     GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-    GlStateManager.enableBlend();
+    GlStateManager.disableAlpha();
 
     mc.getTextureManager().bindTexture(loc);
 
-    drawModalRectWithCustomSizedTexture(0, 0, 0f, 0f, mc.displayWidth, mc.displayHeight, 800, 800);
+    drawModalRectWithCustomSizedTexture(0, res.getScaledHeight() - (int)(height * 1.37), 0f, 0f, width, height, res.getScaledWidth(), res.getScaledHeight());
 
-    GlStateManager.disableBlend();
+    GlStateManager.popMatrix();
+
+    GlStateManager.depthMask(true);
+    GlStateManager.enableDepth();
+    GlStateManager.enableAlpha();
+    GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+
+    mc.renderEngine.bindTexture(new ResourceLocation("minecraft", "textures/gui/icons.png"));
 
     mc.profiler.endSection();
   }

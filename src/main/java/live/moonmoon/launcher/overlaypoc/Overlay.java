@@ -11,7 +11,9 @@ import net.minecraftforge.fml.common.Mod;
 @Mod(
   modid = Overlay.MOD_ID,
   name = Overlay.MOD_NAME,
-  version = Overlay.VERSION
+  version = Overlay.VERSION,
+  clientSideOnly = true,
+  acceptedMinecraftVersions = "[1.12]"
 )
 public class Overlay {
   public static final String MOD_ID = "overlaypoc";

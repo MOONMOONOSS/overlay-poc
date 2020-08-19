@@ -30,6 +30,12 @@ public class OverlayRenderer extends Gui {
     loopThread.start();
   }
 
+  @SubscribeEvent(priority = EventPriority.HIGHEST)
+  public void hidePersistentChat(RenderGameOverlayEvent.Pre ev) {
+    if (ev.getType() == RenderGameOverlayEvent.ElementType.CHAT)
+      ev.setCanceled(true);
+  }
+
   @SubscribeEvent(priority = EventPriority.LOWEST)
   public void renderOverlay(RenderGameOverlayEvent.Post ev) {
     if (imgBuff == null) return;

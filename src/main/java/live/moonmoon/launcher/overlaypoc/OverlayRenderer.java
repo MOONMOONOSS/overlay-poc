@@ -31,7 +31,7 @@ public class OverlayRenderer extends Gui {
   }
 
   @SubscribeEvent(priority = EventPriority.LOWEST)
-  public void renderOverlay(RenderGameOverlayEvent.Pre ev) {
+  public void renderOverlay(RenderGameOverlayEvent.Post ev) {
     if (imgBuff == null) return;
     if (hasRefreshed || loc == null) {
       mc.getTextureManager().deleteTexture(loc);
@@ -51,21 +51,19 @@ public class OverlayRenderer extends Gui {
     final int height = res.getScaledHeight() / 2;
     GlStateManager.pushMatrix();
 
-    GlStateManager.disableDepth();
-    GlStateManager.depthMask(false);
     GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
     GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-    GlStateManager.disableAlpha();
+
+    GlStateManager.enableBlend();
 
     mc.getTextureManager().bindTexture(loc);
 
-    drawModalRectWithCustomSizedTexture(0, res.getScaledHeight() - (int)(height * 1.37), 0f, 0f, width, height, res.getScaledWidth(), res.getScaledHeight());
-
+//    drawModalRectWithCustomSizedTexture(0, res.getScaledHeight() - (int)(height * 1.37), 0f, 0f, width, height, res.getScaledWidth(), res.getScaledHeight());
+    drawModalRectWithCustomSizedTexture(0, res.getScaledHeight() - (int)(height * 1.37), 0f, 0f, width, height, width, height);
     GlStateManager.popMatrix();
 
-    GlStateManager.depthMask(true);
-    GlStateManager.enableDepth();
-    GlStateManager.enableAlpha();
+    GlStateManager.disableBlend();
+
     GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
     mc.renderEngine.bindTexture(new ResourceLocation("minecraft", "textures/gui/icons.png"));

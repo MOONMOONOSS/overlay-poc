@@ -1,5 +1,8 @@
 package live.moonmoon.launcher.overlaypoc;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import live.moonmoon.launcher.overlaypoc.serialization.ClientChatEventSerializer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
@@ -21,6 +24,9 @@ public class OverlayRenderer extends Gui {
   private final Minecraft mc = Minecraft.getMinecraft();
   private static final Runnable loop = new RenderLoop();
   private static final Thread loopThread = new Thread(loop);
+  private final Gson gson = new GsonBuilder()
+    .registerTypeAdapter(ClientChatEvent.class, new ClientChatEventSerializer())
+    .create();
   private static ResourceLocation loc;
 
   protected static BufferedImage imgBuff;
@@ -40,8 +46,12 @@ public class OverlayRenderer extends Gui {
   @SubscribeEvent(priority = EventPriority.HIGHEST)
   public void beforeChatSend(ClientChatEvent ev) {
     // Cancel all message send events that aren't Minecraft commands
-    if (!ev.getMessage().startsWith("/"))
+    if (!ev.getMessage().startsWith("/")) {
+      final String output = gson.toJson(ev);
+      Overlay.server.send(output);
+
       ev.setCanceled(true);
+    }
   }
 
   @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -89,7 +99,7 @@ public class OverlayRenderer extends Gui {
 class RenderLoop implements Runnable {
   public void run() {
     while (true) {
-      byte[] reply = Overlay.socket.recv(0);
+      byte[] reply = Overlay.client.recv(0);
       final InputStream in = new ByteArrayInputStream(reply);
 
       try {

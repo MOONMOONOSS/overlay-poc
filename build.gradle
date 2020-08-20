@@ -39,6 +39,7 @@ repositories {
 
 dependencies {
     compile group: 'org.zeromq', name: 'jeromq', version: '0.5.2'
+    implementation 'com.google.code.gson:gson:2.8.6'
 }
 
 processResources {

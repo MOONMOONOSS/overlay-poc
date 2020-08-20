@@ -23,7 +23,8 @@ public class Overlay {
   public static Overlay INSTANCE;
 
   protected static ZContext ctx;
-  protected static ZMQ.Socket socket;
+  protected static ZMQ.Socket client;
+  protected static ZMQ.Socket server;
 
   /**
    * This is the second initialization event. Register custom recipes
@@ -35,8 +36,11 @@ public class Overlay {
     ctx = new ZContext();
     System.out.println("Connecting to Electron server");
 
-    socket = ctx.createSocket(SocketType.PULL);
-    socket.connect("tcp://127.0.0.1:27015");
+    client = ctx.createSocket(SocketType.PULL);
+    client.connect("tcp://127.0.0.1:27015");
+
+    server = ctx.createSocket(SocketType.PUB);
+    server.bind("tcp://127.0.0.1:27016");
 
     MinecraftForge.EVENT_BUS.register(new OverlayRenderer());
   }

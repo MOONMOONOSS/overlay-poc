@@ -6,6 +6,7 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -33,6 +34,13 @@ public class OverlayRenderer extends Gui {
   @SubscribeEvent(priority = EventPriority.HIGHEST)
   public void hidePersistentChat(RenderGameOverlayEvent.Pre ev) {
     if (ev.getType() == RenderGameOverlayEvent.ElementType.CHAT)
+      ev.setCanceled(true);
+  }
+
+  @SubscribeEvent(priority = EventPriority.HIGHEST)
+  public void beforeChatSend(ClientChatEvent ev) {
+    // Cancel all message send events that aren't Minecraft commands
+    if (!ev.getMessage().startsWith("/"))
       ev.setCanceled(true);
   }
 

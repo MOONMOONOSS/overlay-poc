@@ -1,3 +1,8 @@
+configurations {
+    shade
+    compile.extendsFrom shade
+}
+
 buildscript {
     repositories {
         jcenter()
@@ -29,6 +34,12 @@ minecraft {
     // simply re-run your setup task after changing the mappings to update your workspace.
     mappings = project.mcpVersion
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
+    reobf {
+        jar {
+            extraLines "PK: com/google/gson live/moonmoon/gson"
+            extraLines "PK: org/zeromq live/moonmoon/zeromq"
+        }
+    }
 }
 
 repositories {
@@ -38,8 +49,8 @@ repositories {
 }
 
 dependencies {
-    compile group: 'org.zeromq', name: 'jeromq', version: '0.5.2'
-    implementation 'com.google.code.gson:gson:2.8.6'
+    shade group: 'org.zeromq', name: 'jeromq', version: '0.5.2'
+    shade 'com.google.code.gson:gson:2.8.6'
 }
 
 processResources {
@@ -58,5 +69,13 @@ processResources {
     // copy everything else, thats not the mcmod.info
     from(sourceSets.main.resources.srcDirs) {
         exclude "mcmod.info"
+    }
+}
+
+jar {
+    configurations.shade.each { dep ->
+        from(project.zipTree(dep)){
+            exclude 'META-INF', 'META-INF/**'
+        }
     }
 }

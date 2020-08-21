@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import live.moonmoon.launcher.overlaypoc.OverlayRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.ClientChatEvent;
 
@@ -14,6 +15,10 @@ public class ClientChatEventSerializer implements JsonSerializer<ClientChatEvent
     JsonObject obj = new JsonObject();
     obj.addProperty("msg", src.getMessage());
     obj.addProperty("player", Minecraft.getMinecraft().player.getDisplayNameString());
+    obj.addProperty("id", OverlayRenderer.MESSAGE_ID);
+
+    // Increment the counter after we're done with it.
+    OverlayRenderer.MESSAGE_ID += 1;
 
     return obj;
   }

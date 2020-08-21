@@ -24,16 +24,14 @@ public class OverlayRenderer extends Gui {
   private final Minecraft mc = Minecraft.getMinecraft();
   private static final Runnable loop = new RenderLoop();
   private static final Thread loopThread = new Thread(loop);
-  private final Gson gson = new GsonBuilder()
-    .registerTypeAdapter(ClientChatEvent.class, new ClientChatEventSerializer())
-    .create();
   private static ResourceLocation loc;
 
   protected static BufferedImage imgBuff;
   protected static boolean hasRefreshed = true;
 
+  public static long MESSAGE_ID = 0;
+
   public OverlayRenderer() {
-    zLevel = 0f;
     loopThread.start();
   }
 
@@ -47,7 +45,12 @@ public class OverlayRenderer extends Gui {
   public void beforeChatSend(ClientChatEvent ev) {
     // Cancel all message send events that aren't Minecraft commands
     if (!ev.getMessage().startsWith("/")) {
+      final Gson gson = new GsonBuilder()
+        .registerTypeAdapter(ClientChatEvent.class, new ClientChatEventSerializer())
+        .create();
       final String output = gson.toJson(ev);
+      System.out.println("Sending the below JSON object to Electron");
+      System.out.println(output);
       Overlay.server.send(output);
 
       ev.setCanceled(true);

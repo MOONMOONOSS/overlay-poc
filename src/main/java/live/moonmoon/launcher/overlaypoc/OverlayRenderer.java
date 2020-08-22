@@ -83,11 +83,16 @@ public class OverlayRenderer extends Gui {
     obj.remove("translate");
     obj.remove("with");
 
+    obj.addProperty("translation", msg.getFormattedText().substring(2));
     obj.addProperty("id", MESSAGE_ID);
 
+    final long colorCount = msg.getFormattedText().chars().filter(ch -> ch == '§').count();
+
     if (ev.getType() == ChatType.SYSTEM) {
-      if (obj.get("color") != null)
+      if (obj.get("color") != null && colorCount == 1)
         obj.addProperty("type", "basic-colored");
+      else if (colorCount >= 2)
+        obj.addProperty("type", "complex-colored");
       else
         obj.addProperty("type", "basic-entry");
     }
@@ -99,8 +104,6 @@ public class OverlayRenderer extends Gui {
     System.out.println(output);
 
     System.out.println(msg.getFormattedText());
-    System.out.println(msg.getUnformattedText());
-    System.out.println(msg.getUnformattedComponentText());
 
     System.out.println(ev.getType().toString());
 

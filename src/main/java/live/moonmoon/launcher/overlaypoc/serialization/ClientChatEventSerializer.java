@@ -16,6 +16,7 @@ public class ClientChatEventSerializer implements JsonSerializer<ClientChatEvent
     obj.addProperty("msg", src.getMessage());
     obj.addProperty("player", Minecraft.getMinecraft().player.getDisplayNameString());
     obj.addProperty("id", OverlayRenderer.MESSAGE_ID);
+    obj.addProperty("type", "basic-player");
 
     // Increment the counter after we're done with it.
     OverlayRenderer.MESSAGE_ID += 1;

@@ -2,6 +2,8 @@ package live.moonmoon.launcher.overlaypoc;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import live.moonmoon.launcher.overlaypoc.serialization.ClientChatEventSerializer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -9,8 +11,12 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.ChatType;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.client.event.ClientChatEvent;
+import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -22,6 +28,10 @@ import java.io.InputStream;
 
 public class OverlayRenderer extends Gui {
   private final Minecraft mc = Minecraft.getMinecraft();
+  private final Gson gson = new GsonBuilder()
+    .registerTypeAdapter(ClientChatEvent.class, new ClientChatEventSerializer())
+    .create();
+
   private static final Runnable loop = new RenderLoop();
   private static final Thread loopThread = new Thread(loop);
   private static ResourceLocation loc;
@@ -45,9 +55,6 @@ public class OverlayRenderer extends Gui {
   public void beforeChatSend(ClientChatEvent ev) {
     // Cancel all message send events that aren't Minecraft commands
     if (!ev.getMessage().startsWith("/")) {
-      final Gson gson = new GsonBuilder()
-        .registerTypeAdapter(ClientChatEvent.class, new ClientChatEventSerializer())
-        .create();
       final String output = gson.toJson(ev);
       System.out.println("Sending the below JSON object to Electron");
       System.out.println(output);
@@ -55,6 +62,49 @@ public class OverlayRenderer extends Gui {
 
       ev.setCanceled(true);
     }
+  }
+
+  @SubscribeEvent(priority = EventPriority.HIGHEST)
+  public void onServerReceive(ServerChatEvent ev) {
+    final JsonObject obj = (JsonObject) JsonParser.parseString(ITextComponent.Serializer.componentToJson(ev.getComponent()));
+    obj.addProperty("type", "unknown");
+
+    final String output = gson.toJson(obj);
+
+    System.out.println(output);
+
+    Overlay.server.send(output);
+  }
+
+  @SubscribeEvent(priority = EventPriority.HIGHEST)
+  public void onChatReceive(ClientChatReceivedEvent ev) {
+    final ITextComponent msg = ev.getMessage();
+    final JsonObject obj = (JsonObject) JsonParser.parseString(ITextComponent.Serializer.componentToJson(msg));
+    obj.addProperty("translation", msg.getUnformattedComponentText());
+    obj.addProperty("id", MESSAGE_ID);
+
+    if (ev.getType() == ChatType.SYSTEM) {
+      if (obj.get("color") != null)
+        obj.addProperty("type", "basic-colored");
+      else
+        obj.addProperty("type", "basic-entry");
+    }
+    else
+      obj.addProperty("type", "unknown");
+
+    final String output = gson.toJson(obj);
+
+    System.out.println(output);
+
+    System.out.println(msg.getFormattedText());
+    System.out.println(msg.getUnformattedText());
+    System.out.println(msg.getUnformattedComponentText());
+
+    System.out.println(ev.getType().toString());
+
+    Overlay.server.send(output);
+
+    MESSAGE_ID += 1;
   }
 
   @SubscribeEvent(priority = EventPriority.LOWEST)

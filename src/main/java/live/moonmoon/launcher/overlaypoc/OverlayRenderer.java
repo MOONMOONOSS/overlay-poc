@@ -80,7 +80,9 @@ public class OverlayRenderer extends Gui {
   public void onChatReceive(ClientChatReceivedEvent ev) {
     final ITextComponent msg = ev.getMessage();
     final JsonObject obj = (JsonObject) JsonParser.parseString(ITextComponent.Serializer.componentToJson(msg));
-    obj.addProperty("translation", msg.getUnformattedComponentText());
+    obj.remove("translate");
+    obj.remove("with");
+
     obj.addProperty("id", MESSAGE_ID);
 
     if (ev.getType() == ChatType.SYSTEM) {

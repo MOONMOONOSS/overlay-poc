@@ -78,18 +78,21 @@ public class OverlayRenderer extends Gui {
     final int height = res.getScaledHeight() / 2;
     GlStateManager.pushMatrix();
 
+    GlStateManager.enableBlend();
+    GlStateManager.disableDepth();
+    GlStateManager.disableAlpha();
+
     GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
     GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
-    GlStateManager.enableBlend();
-
     mc.getTextureManager().bindTexture(loc);
 
-//    drawModalRectWithCustomSizedTexture(0, res.getScaledHeight() - (int)(height * 1.37), 0f, 0f, width, height, res.getScaledWidth(), res.getScaledHeight());
     drawModalRectWithCustomSizedTexture(0, res.getScaledHeight() - (int)(height * 1.37), 0f, 0f, width, height, width, height);
     GlStateManager.popMatrix();
 
     GlStateManager.disableBlend();
+    GlStateManager.enableAlpha();
+    GlStateManager.disableDepth();
 
     GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 

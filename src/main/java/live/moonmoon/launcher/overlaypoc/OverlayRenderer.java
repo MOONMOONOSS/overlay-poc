@@ -82,7 +82,7 @@ public class OverlayRenderer extends Gui {
     GlStateManager.disableDepth();
     GlStateManager.disableAlpha();
 
-    GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+    GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
     GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
     mc.getTextureManager().bindTexture(loc);

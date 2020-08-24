@@ -11,7 +11,6 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
@@ -59,8 +58,6 @@ public class OverlayRenderer extends Gui {
       System.out.println("Sending the below JSON object to Electron");
       System.out.println(output);
       Overlay.server.send(output);
-
-      ev.setCanceled(true);
     }
   }
 
@@ -83,21 +80,8 @@ public class OverlayRenderer extends Gui {
     obj.remove("translate");
     obj.remove("with");
 
-    obj.addProperty("translation", msg.getFormattedText().substring(2));
+    obj.addProperty("translation", msg.getFormattedText());
     obj.addProperty("id", MESSAGE_ID);
-
-    final long colorCount = msg.getFormattedText().chars().filter(ch -> ch == '§').count();
-
-    if (ev.getType() == ChatType.SYSTEM) {
-      if (obj.get("color") != null && colorCount == 1)
-        obj.addProperty("type", "basic-colored");
-      else if (colorCount >= 2)
-        obj.addProperty("type", "complex-colored");
-      else
-        obj.addProperty("type", "basic-entry");
-    }
-    else
-      obj.addProperty("type", "unknown");
 
     final String output = gson.toJson(obj);
 

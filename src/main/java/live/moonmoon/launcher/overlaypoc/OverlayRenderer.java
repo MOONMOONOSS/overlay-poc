@@ -15,7 +15,6 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -48,29 +47,6 @@ public class OverlayRenderer extends Gui {
   public void hidePersistentChat(RenderGameOverlayEvent.Pre ev) {
     if (ev.getType() == RenderGameOverlayEvent.ElementType.CHAT)
       ev.setCanceled(true);
-  }
-
-  @SubscribeEvent(priority = EventPriority.HIGHEST)
-  public void beforeChatSend(ClientChatEvent ev) {
-    // Cancel all message send events that aren't Minecraft commands
-    if (!ev.getMessage().startsWith("/")) {
-      final String output = gson.toJson(ev);
-      System.out.println("Sending the below JSON object to Electron");
-      System.out.println(output);
-      Overlay.server.send(output);
-    }
-  }
-
-  @SubscribeEvent(priority = EventPriority.HIGHEST)
-  public void onServerReceive(ServerChatEvent ev) {
-    final JsonObject obj = (JsonObject) JsonParser.parseString(ITextComponent.Serializer.componentToJson(ev.getComponent()));
-    obj.addProperty("type", "unknown");
-
-    final String output = gson.toJson(obj);
-
-    System.out.println(output);
-
-    Overlay.server.send(output);
   }
 
   @SubscribeEvent(priority = EventPriority.HIGHEST)

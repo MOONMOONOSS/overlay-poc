@@ -4,19 +4,18 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mojang.blaze3d.platform.GlStateManager;
 import live.moonmoon.launcher.overlaypoc.serialization.ClientChatEventSerializer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -24,10 +23,11 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class OverlayRenderer extends Gui {
-  private final Minecraft mc = Minecraft.getMinecraft();
+public class OverlayRenderer extends AbstractGui {
+  private final Minecraft mc = Minecraft.getInstance();
   private final Gson gson = new GsonBuilder()
     .registerTypeAdapter(ClientChatEvent.class, new ClientChatEventSerializer())
+    .registerTypeAdapter(ITextComponent.Serializer.class, new ITextComponent.Serializer())
     .create();
 
   private static final Runnable loop = new RenderLoop();
@@ -52,7 +52,7 @@ public class OverlayRenderer extends Gui {
   @SubscribeEvent(priority = EventPriority.HIGHEST)
   public void onChatReceive(ClientChatReceivedEvent ev) {
     final ITextComponent msg = ev.getMessage();
-    final JsonObject obj = (JsonObject) JsonParser.parseString(ITextComponent.Serializer.componentToJson(msg));
+    final JsonObject obj = (JsonObject) JsonParser.parseString(gson.toJson(msg));
     obj.remove("translate");
     obj.remove("with");
 
@@ -87,7 +87,7 @@ public class OverlayRenderer extends Gui {
       hasRefreshed = false;
     }
 
-    mc.profiler.startSection("overlay-poc");
+    mc.getProfiler().startSection("overlay-poc");
     final ScaledResolution res = new ScaledResolution(mc);
     final int width = (int)(res.getScaledWidth() * 0.75);
     final int height = res.getScaledHeight() / 2;
@@ -109,9 +109,9 @@ public class OverlayRenderer extends Gui {
 
     GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 
-    mc.renderEngine.bindTexture(new ResourceLocation("minecraft", "textures/gui/icons.png"));
+    mc.getRenderManager().bindTexture(new ResourceLocation("minecraft", "textures/gui/icons.png"));
 
-    mc.profiler.endSection();
+    mc.getProfiler().endSection();
   }
 }
 

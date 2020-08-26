@@ -9,6 +9,7 @@ import live.moonmoon.launcher.overlaypoc.serialization.ClientChatEventSerializer
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.NativeImage;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.client.event.ClientChatEvent;
@@ -17,8 +18,6 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +33,7 @@ public class OverlayRenderer extends AbstractGui {
   private static final Thread loopThread = new Thread(loop);
   private static ResourceLocation loc;
 
-  protected static BufferedImage imgBuff;
+  protected static NativeImage img;
   protected static boolean hasRefreshed = true;
 
   public static long MESSAGE_ID = 0;
@@ -74,7 +73,7 @@ public class OverlayRenderer extends AbstractGui {
 
   @SubscribeEvent(priority = EventPriority.LOWEST)
   public void renderOverlay(RenderGameOverlayEvent.Post ev) {
-    if (imgBuff == null) return;
+    if (img == null) return;
     if (hasRefreshed || loc == null) {
       mc.getTextureManager().deleteTexture(loc);
 
@@ -82,34 +81,33 @@ public class OverlayRenderer extends AbstractGui {
         .getTextureManager()
         .getDynamicTextureLocation(
           "overlay-poc-img",
-          new DynamicTexture(imgBuff)
+          new DynamicTexture(img)
         );
       hasRefreshed = false;
     }
 
     mc.getProfiler().startSection("overlay-poc");
-    final ScaledResolution res = new ScaledResolution(mc);
-    final int width = (int)(res.getScaledWidth() * 0.75);
-    final int height = res.getScaledHeight() / 2;
+    final int width = (int)(mc.mainWindow.getScaledWidth() * 0.75);
+    final int height = mc.mainWindow.getScaledHeight() / 2;
     GlStateManager.pushMatrix();
 
     GlStateManager.enableBlend();
-    GlStateManager.disableDepth();
+    GlStateManager.disableDepthTest();
 
-    GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-    GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_COLOR, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+    GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+    GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_COLOR, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 
     mc.getTextureManager().bindTexture(loc);
 
-    drawModalRectWithCustomSizedTexture(0, res.getScaledHeight() - (int)(height * 1.37), 0f, 0f, width, height, width, height);
+    blit(0, mc.mainWindow.getScaledHeight() - (int)(height * 1.37), 0f, 0f, width, height, width, height);
     GlStateManager.popMatrix();
 
     GlStateManager.disableBlend();
-    GlStateManager.enableDepth();
+    GlStateManager.enableDepthTest();
 
-    GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+    GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
 
-    mc.getRenderManager().bindTexture(new ResourceLocation("minecraft", "textures/gui/icons.png"));
+    mc.getTextureManager().bindTexture(new ResourceLocation("minecraft", "textures/gui/icons.png"));
 
     mc.getProfiler().endSection();
   }
@@ -122,7 +120,7 @@ class RenderLoop implements Runnable {
       final InputStream in = new ByteArrayInputStream(reply);
 
       try {
-        OverlayRenderer.imgBuff = ImageIO.read(in);
+        OverlayRenderer.img = NativeImage.read(in);
       } catch (IOException e) {
         e.printStackTrace();
       }

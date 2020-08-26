@@ -14,7 +14,7 @@ public class ClientChatEventSerializer implements JsonSerializer<ClientChatEvent
   public JsonElement serialize(ClientChatEvent src, Type typeOfSrc, JsonSerializationContext ctx) {
     JsonObject obj = new JsonObject();
     obj.addProperty("msg", src.getMessage());
-    obj.addProperty("player", Minecraft.getMinecraft().player.getDisplayNameString());
+    obj.addProperty("player", Minecraft.getInstance().player.getDisplayName().toString());
     obj.addProperty("id", OverlayRenderer.MESSAGE_ID);
     obj.addProperty("type", "basic-player");
 
